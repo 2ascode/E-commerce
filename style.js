@@ -1,0 +1,197 @@
+class IphoneStock {
+  constructor() {
+    this.iphoneStock = [];
+    this.shoppingCartList = [];
+    this.count = 0;
+  }
+
+  initCount() {
+    const count = localStorage.getItem("count");
+    if (!count) {
+      localStorage.setItem("count", JSON.stringify(0));
+    } else {
+      this.count = JSON.parse(count);
+    }
+  }
+
+  initProduct() {
+    const getIphoneStock = localStorage.getItem("iphoneStock");
+    if (!getIphoneStock) {
+      localStorage.setItem("iphoneStock", JSON.stringify([]));
+    } else {
+      this.iphoneStock = JSON.parse(getIphoneStock);
+    }
+  }
+
+  initShoppingCartList() {
+    const shoppingCartList = localStorage.getItem("shoppingCartList");
+    if (!shoppingCartList) {
+      localStorage.setItem("shoppingCartList", JSON.stringify([]));
+    } else {
+      this.shoppingCartList = JSON.parse(shoppingCartList);
+    }
+  }
+
+  addProduct() {
+    const addForm = document.querySelector(".addForm");
+    if (addForm) {
+      const name = addForm.querySelector("input[name='name']");
+      const color = addForm.querySelector("input[name='color']");
+      const price = addForm.querySelector("input[name='price']");
+      const image = addForm.querySelector("#image");
+
+      //Conversion de l'image en base64
+
+      image.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+
+        addForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          console.log(file.name);
+          if (file) {
+            const ios = {
+              nom: name.value,
+              couleur: color.value,
+              prix: price.value,
+              imageURl: "/images/" + file.name,
+            };
+            this.iphoneStock.push(ios);
+            localStorage.setItem(
+              "iphoneStock",
+              JSON.stringify(this.iphoneStock)
+            );
+          }
+        });
+      });
+    }
+  }
+
+  displayIos() {
+    const productBlock = document.getElementById("shopProductsBlock");
+    let content = "";
+    this.iphoneStock.forEach((element) => {
+      content += `
+            <div class="productItem">
+                <img src=${element.imageURl} alt="Iphone12">
+                <h3 class="productName">${element.nom}</h3>
+                <p class="color">Couleur: ${element.couleur}</p>
+                <p class="productPrice">${element.prix} FCFA</p>
+                <span class="hoverText"><button class="addBtn">Ajouter au pannier</button></span>
+            </div>
+        `;
+      productBlock.innerHTML = content;
+    });
+  }
+
+  addToShoppingCartList() {
+    const shopping = document.querySelector(".shopping");
+    let getCount = localStorage.getItem("count");
+    this.count = JSON.parse(getCount);
+    shopping.innerHTML = this.count;
+    const shoppingCartList = document.querySelectorAll(".shoppingTable");
+    console.log(shoppingCartList);
+    const productItem = document.querySelectorAll(".productItem");
+    console.log(productItem);
+    if (productItem) {
+      productItem.forEach((element) => {
+        if (element) {
+          const hoverText = element.querySelector(".hoverText");
+          hoverText.addEventListener("click", (e) => {
+            let getCount = localStorage.getItem("count");
+            this.count = JSON.parse(getCount);
+            this.count++;
+            localStorage.setItem("count", JSON.stringify(this.count));
+            const name = element.querySelector(".productName");
+            let color = element.querySelector(".color");
+            color = color.textContent.split(" ");
+            color = color[1];
+
+            let price = element.querySelector(".productPrice");
+            price = price.textContent.split(" ");
+            price = price[0];
+            let qte = 1;
+            const iosAdd = {
+              nom: name.textContent,
+              couleur: color,
+              prix: price,
+              qte: qte,
+              prixTotal: qte * price,
+            };
+
+            this.shoppingCartList.push(iosAdd);
+            localStorage.setItem(
+              "shoppingCartList",
+              JSON.stringify(this.shoppingCartList)
+            );
+          });
+        }
+      });
+    }
+  }
+
+  displayShoppingCartList() {
+    const shopping = document.querySelector(".shopping");
+    let getCount = localStorage.getItem("count");
+    this.count = JSON.parse(getCount);
+    shopping.innerHTML = this.count;
+    const addList = document.querySelector(".shoppingCartList");
+    if (this.shoppingCartList.length <= 0) {
+      addList.innerHTML = `
+            <tr>
+                <td colspan="6">
+                <p class="emptydata">Aucune information disponible</p>
+                </td>
+            </tr>
+        `;
+    } else {
+      let content = "";
+      this.shoppingCartList.forEach((element) => {
+        console.log(this.shoppingCartList.length);
+
+        content += `
+                    <tr>
+                        <td>${element.nom}</td>
+                        <td>${element.couleur}</td>
+                        <td>${element.prix}</td>
+                        <td>${element.qte}</td>
+                        <td>${element.prixTotal}</td>
+                        <td class="action">
+                            <button class="moreBtn">+</button>
+                            <button class="lessbtn">-</button>
+                            <button class="deletBtn">Supprimer</button>
+                            <button class="payBtn">Payer</button>
+                        </td>
+                    </tr>
+                    
+                `;
+        addList.innerHTML = content;
+      });
+    }
+  }
+}
+
+const iphoneStock = new IphoneStock();
+iphoneStock.initProduct();
+iphoneStock.initShoppingCartList();
+iphoneStock.initCount();
+
+const pathname = window.location.pathname;
+if (pathname == "/admin.html") {
+  iphoneStock.addProduct();
+}
+
+if (pathname == "/shop.html") {
+  iphoneStock.displayIos();
+}
+
+if (pathname == "/shop.html") {
+  iphoneStock.addToShoppingCartList();
+}
+
+if (pathname == "/index.html") {
+  iphoneStock.addToShoppingCartList();
+}
+
+if (pathname == "/shopping_cart.html") {
+  iphoneStock.displayShoppingCartList();
+}
