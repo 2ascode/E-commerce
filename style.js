@@ -79,15 +79,14 @@ class IphoneStock {
                 <span class="hoverText"><button class="addBtn">Ajouter au pannier</button></span>
             </div>
         `;
-      productBlock.innerHTML = content;
+      productBlock.innerHTML += content;
     });
   }
 
   addToShoppingCartList() {
     const shopping = document.querySelector(".shopping");
-    let getCount = localStorage.getItem("count");
-    this.count = JSON.parse(getCount);
-    shopping.innerHTML = this.count;
+    shopping.innerHTML = `${this.count}`;
+
     const shoppingCartList = document.querySelectorAll(".shoppingTable");
     console.log(shoppingCartList);
     const productItem = document.querySelectorAll(".productItem");
@@ -111,6 +110,7 @@ class IphoneStock {
             price = price[0];
             let qte = 1;
             const iosAdd = {
+              id: this.shoppingCartList.length + 1,
               nom: name.textContent,
               couleur: color,
               prix: price,
@@ -131,9 +131,7 @@ class IphoneStock {
 
   displayShoppingCartList() {
     const shopping = document.querySelector(".shopping");
-    let getCount = localStorage.getItem("count");
-    this.count = JSON.parse(getCount);
-    shopping.innerHTML = this.count;
+    shopping.innerHTML = `${this.count}`;
     const addList = document.querySelector(".shoppingCartList");
     if (this.shoppingCartList.length <= 0) {
       addList.innerHTML = `
@@ -146,8 +144,6 @@ class IphoneStock {
     } else {
       let content = "";
       this.shoppingCartList.forEach((element) => {
-        console.log(this.shoppingCartList.length);
-
         content += `
                     <tr>
                         <td>${element.nom}</td>
@@ -156,15 +152,97 @@ class IphoneStock {
                         <td>${element.qte}</td>
                         <td>${element.prixTotal}</td>
                         <td class="action">
-                            <button class="moreBtn">+</button>
-                            <button class="lessbtn">-</button>
-                            <button class="deletBtn">Supprimer</button>
-                            <button class="payBtn">Payer</button>
+                            <button class="moreBtn" more-id=${element.id}>+</button>
+                            <button class="lessBtn" less-id=${element.id}>-</button>
+                            <button class="deletBtn" data-ios-id=${element.id}>Supprimer</button>
+                            <button class="payBtn" data-transaction-amount="${element.prixTotal}" data-transaction-description="Achat de ${element.nom}">Payer</button>
                         </td>
                     </tr>
                     
                 `;
         addList.innerHTML = content;
+      });
+    }
+  }
+
+  deletIos() {
+    const deletIosTag = document.querySelectorAll(".deletBtn");
+    if (deletIosTag) {
+      deletIosTag.forEach((item) => {
+        item.addEventListener("click", (e) => {
+          e.preventDefault();
+          let getCount = localStorage.getItem("count");
+          this.count = JSON.parse(getCount);
+          this.count = this.count - 1;
+          localStorage.setItem("count", JSON.stringify(this.count));
+          const currentAttribute = e.target.getAttribute("data-ios-id");
+          const filtershoppingCartList = this.shoppingCartList.filter(
+            (p) => p.id != currentAttribute
+          );
+          localStorage.setItem(
+            "shoppingCartList",
+            JSON.stringify(filtershoppingCartList)
+          );
+          location.reload();
+        });
+      });
+    }
+  }
+
+  moreQte() {
+    const IosTag = document.querySelectorAll(".moreBtn");
+    if (IosTag) {
+      IosTag.forEach((item) => {
+        const select = item.querySelector(".moreBtn");
+        console.log(select);
+        item.addEventListener("click", (e) => {
+          e.preventDefault();
+          let getshoppingCartList = localStorage.getItem("shoppingCartList");
+          this.shoppingCartList = JSON.parse(getshoppingCartList);
+          const currentAttribute = e.target.getAttribute("more-id");
+          console.log(currentAttribute);
+          const filtershoppingCartList = this.shoppingCartList.filter(
+            (p) => p.id == currentAttribute
+          );
+          filtershoppingCartList[0].qte = filtershoppingCartList[0].qte + 1;
+          filtershoppingCartList[0].prixTotal =
+            filtershoppingCartList[0].prix * filtershoppingCartList[0].qte;
+          console.log(filtershoppingCartList);
+          localStorage.setItem(
+            "shoppingCartList",
+            JSON.stringify(this.shoppingCartList)
+          );
+          location.reload();
+        });
+      });
+    }
+  }
+
+  lessQte() {
+    const IosTag = document.querySelectorAll(".lessBtn");
+    if (IosTag) {
+      IosTag.forEach((item) => {
+        const select = item.querySelector(".lessBtn");
+        console.log(select);
+        item.addEventListener("click", (e) => {
+          e.preventDefault();
+          let getshoppingCartList = localStorage.getItem("shoppingCartList");
+          this.shoppingCartList = JSON.parse(getshoppingCartList);
+          const currentAttribute = e.target.getAttribute("less-id");
+          console.log(currentAttribute);
+          const filtershoppingCartList = this.shoppingCartList.filter(
+            (p) => p.id == currentAttribute
+          );
+          filtershoppingCartList[0].qte = filtershoppingCartList[0].qte - 1;
+          filtershoppingCartList[0].prixTotal =
+            filtershoppingCartList[0].prix * filtershoppingCartList[0].qte;
+          console.log(filtershoppingCartList);
+          localStorage.setItem(
+            "shoppingCartList",
+            JSON.stringify(this.shoppingCartList)
+          );
+          location.reload();
+        });
       });
     }
   }
@@ -182,9 +260,6 @@ if (pathname == "/admin.html") {
 
 if (pathname == "/shop.html") {
   iphoneStock.displayIos();
-}
-
-if (pathname == "/shop.html") {
   iphoneStock.addToShoppingCartList();
 }
 
@@ -194,4 +269,7 @@ if (pathname == "/index.html") {
 
 if (pathname == "/shopping_cart.html") {
   iphoneStock.displayShoppingCartList();
+  iphoneStock.deletIos();
+  iphoneStock.moreQte();
+  iphoneStock.lessQte();
 }
