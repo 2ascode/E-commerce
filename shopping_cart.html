@@ -47,17 +47,15 @@
               <th>Actions</th>
             </tr>
           </thead>
-          <tbody class="shoppingCartList">
-          </tbody>
+          <tbody class="shoppingCartList"></tbody>
         </table>
       </div>
     </main>
+    <script src="style.js"></script>
     <script type="text/javascript">
-        const payBtn = document.querySelectorAll(".payBtn")
-      FedaPay.init("payBtn", {
+      FedaPay.init(".payBtn", {
         public_key: "pk_sandbox_4zffNqbLoz57B-czeOMtylWV",
       });
     </script>
-    <script src="style.js"></script>
   </body>
 </html>
